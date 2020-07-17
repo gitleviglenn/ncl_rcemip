@@ -24,9 +24,6 @@ file_omega="/glade/scratch/levi/RCEMIP/CAM5_GCM/RCE_large295/2D/CAM5_GCM_RCE_lar
 file2_omega="/glade/scratch/levi/RCEMIP/CAM5_GCM/RCE_large300/2D/CAM5_GCM_RCE_large300_2D_wap500.nc"
 file3_omega="/glade/scratch/levi/RCEMIP/CAM5_GCM/RCE_large305/2D/CAM5_GCM_RCE_large305_2D_wap500.nc"
 
-;fileb_omega="/glade/scratch/levi/RCEMIP/CAM5_GCM/RCE_large295/2D/CAM5_GCM_RCE_large295_2D_wap500.nc"
-;file2b_omega="/glade/scratch/levi/RCEMIP/CAM5_GCM/RCE_large300/2D/CAM5_GCM_RCE_large300_2D_wap500.nc"
-;file3b_omega="/glade/scratch/levi/RCEMIP/CAM5_GCM/RCE_large305/2D/CAM5_GCM_RCE_large305_2D_wap500.nc"
 fileb_omega="/glade/scratch/levi/RCEMIP/CAM6_GCM/RCE_large295/2D/CAM6_GCM_RCE_large295_2D_wap500.nc"
 file2b_omega="/glade/scratch/levi/RCEMIP/CAM6_GCM/RCE_large300/2D/CAM6_GCM_RCE_large300_2D_wap500.nc"
 file3b_omega="/glade/scratch/levi/RCEMIP/CAM6_GCM/RCE_large305/2D/CAM6_GCM_RCE_large305_2D_wap500.nc"
@@ -72,6 +69,7 @@ W2_day=where((W2_day .ge. 0),1.,0.)
 W0b_day=where((W0b_day .ge. 0),1.,0.)
 W1b_day=where((W1b_day .ge. 0),1.,0.)
 W2b_day=where((W2b_day .ge. 0),1.,0.)
+
 ;;fieldqidown(:,ik,:)=where((field3dw(:,hlev,:) .le. 0),fieldqi(:,ik,:),fieldqidown@_FillValue)
 ; where(conditional, true value, false value)
 ;
@@ -86,7 +84,7 @@ W2b_day=where((W2b_day .ge. 0),1.,0.)
 
 endtime=1090
 
-print("dimsizes of W0_day are: "+dimsizes(W0_day))
+  print("dimsizes of W0_day are: "+dimsizes(W0_day))
 
 field0_weighted=new(endtime,float)
 field1_weighted=new(endtime,float)
@@ -111,7 +109,7 @@ end do
 
 stats_sub=new((/6,725/), double)
 
-print("dimensions of field0_weighted are: "+dimsizes(field0_weighted))
+  print("dimensions of field0_weighted are: "+dimsizes(field0_weighted))
 
 field0_weighted2yr=field0_weighted(365::)
 print("dimensions of field0_weighted2yr are: "+dimsizes(field0_weighted2yr))
@@ -135,7 +133,7 @@ stats_sub(5,:)=field2b_weighted(365::)
 
 stats_2yr=dim_stat4_n(stats_sub,1)
   print("~!@#$%^&*()*&^%$#@!~")
-print("statistics of sub time series for last two years: "+stats_2yr)
+  print("statistics of sub time series for last two years: "+stats_2yr)
   print("~!@#$%^&*()*&^%$#@!~")
 
 
@@ -143,9 +141,9 @@ print("statistics of sub time series for last two years: "+stats_2yr)
 ;
 ;var_6a_mn=dim_avg_n(var_6a,0)
 ;
-  print("~!@#$%^&*()*&^%$#@!~")
-  print("~!@#$%^&*()*&^%$#@!~")
+;  print("~!@#$%^&*()*&^%$#@!~")
 
+;;*****************************************************************************
 plotname = "w500_subfrac_comp_cam5"
 wks = gsn_open_wks("eps",plotname)
 
@@ -157,10 +155,8 @@ res@gsnFrame = False
 ;res@xyLineThicknessF   = (/1.0,2.5,4.0,1.0,2.5,4.0/) 
 res@xyDashPattern = 0
 ;res@xyLineThicknessF = 3.
-;res@vpWidthF = 0.6
-;res@vpHeightF = 0.2
-res@vpWidthF = 0.5
-res@vpHeightF = 0.5
+res@vpWidthF = 0.7
+res@vpHeightF = 0.35
 
 res@tmXTOn = False
 res@tmXTBorderOn = False
