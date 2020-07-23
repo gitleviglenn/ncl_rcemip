@@ -3,6 +3,9 @@
 ;
 ; analyze characteristics of the circulation using omega at 500 hPa
 ;
+; calculates the intensity of circulation as measured by the difference 
+; between the upwelling and downwelling regions.
+;
 ; data is from CAM5 GCM RCE experiments and is at hourly frequency over 3 years
 ; dimensions of omega:	[time | 26281] x [lat | 192] x [lon | 288]
 ;
@@ -10,6 +13,10 @@
 ; 1 year:         8760 time steps
 ; 1 30 day month: 720 time steps
 ; 75 days:        1800 time steps
+;
+; specify the block of time over which values are averaged before calculating the pdf.
+; Cronin and Wing used 5 day chunks.  Kevins tendency seems to be to not chunk at all
+; but compute the pdf on as many samples as possible.  
 ;
 ; levi silvers                                                           may 2020
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -44,62 +51,15 @@ file_omega_6_305=path_cheyenne+path_C6+"RCE_large305/2D/CAM6_GCM_RCE_large305_2D
 print("begin adding files...")
 ;timelength=24479 ; all but the first 75 days
 ;timelength=2880 ; 4 months
-timelength=8760 ; 1 year 
+timelength=240 ; 100 days
+;timelength=8760 ; 1 year 
 ;timelength=17520 ; 2 years
-endtime=25000 ; ICON GCM has fewer timesteps that CAM or ECHAM
+endtime=26200;
+;endtime=25000 ; ICON GCM has fewer timesteps that CAM or ECHAM
 ;echam has 26280
 ;endtime=26279 ; this is the end time for CAM5 and CAM6
 startime=endtime-timelength+1
 
-;; ICON
-;filen_test="ICON_GCM-RCE_large_295-2D.wa500.nc"
-;file_testmodel=path_cheyenne+"swift.dkrz.de/"+"ICON_GCM/"+filen_test
-;;/glade/scratch/levi/RCEMIP/swift.dkrz.de/ICON_GCM/
-;print("icon file: "+file_testmodel)
-;ficon_295=addfile(file_testmodel,"r")
-;ficona=ficon_295->wa500(startime:endtime,:,:,:)
-;printVarSummary(ficona)
-
-;;# ECHAM
-;filen_test="ECHAM6_GCM-RCE_large_295-2D.wap500.nc"
-;file_echam_a=path_cheyenne+"swift.dkrz.de/"+"ECHAM6_GCM/"+filen_test
-;print("icon file: "+file_echam_a)
-;f_add=addfile(file_echam_a,"r")
-;fechama=f_add->wap500(startime:endtime,:,:,:)
-;filen_test="ECHAM6_GCM-RCE_large_300-2D.wap500.nc"
-;file_echam_b=path_cheyenne+"swift.dkrz.de/"+"ECHAM6_GCM/"+filen_test
-;f_add=addfile(file_echam_b,"r")
-;fechamb=f_add->wap500(startime:endtime,:,:,:)
-;filen_test="ECHAM6_GCM-RCE_large_305-2D.wap500.nc"
-;file_echam_c=path_cheyenne+"swift.dkrz.de/"+"ECHAM6_GCM/"+filen_test
-;f_add=addfile(file_echam_c,"r")
-;fechamc=f_add->wap500(startime:endtime,:,:,:)
-;
-;printVarSummary(fechama)
-;
-;; SP-CAM
-;filen_test="SP-CAM_RCE_large295_2D_wap500.nc"
-;file_spcam_a=path_cheyenne+"swift.dkrz.de/"+"SPCAM/"+filen_test
-;f_add=addfile(file_spcam_a,"r")
-;fspcama=f_add->wap500(startime:endtime,:,:)
-;
-;filen_test="SP-CAM_RCE_large300_2D_wap500.nc"
-;file_spcam_b=path_cheyenne+"swift.dkrz.de/"+"SPCAM/"+filen_test
-;f_add=addfile(file_spcam_b,"r")
-;fspcamb=f_add->wap500(startime:endtime,:,:)
-;
-;filen_test="SP-CAM_RCE_large305_2D_wap500.nc"
-;file_spcam_c=path_cheyenne+"swift.dkrz.de/"+"SPCAM/"+filen_test
-;f_add=addfile(file_spcam_c,"r")
-;fspcamc=f_add->wap500(startime:endtime,:,:)
-;print("SP-CAM file: "+file_spcam_c)
-;
-;printVarSummary(fspcamc)
-
-;filen_test="SP-CAM_RCE_large300_2D_wap500.nc"
-;;file_spcam_b=path_cheyenne+"swift.dkrz.de/"+"SPCAM/"+filen_test
-;filen_test="SP-CAM_RCE_large305_2D_wap500.nc"
-;file_spcam_c=path_cheyenne+"swift.dkrz.de/"+"SPCAM/"+filen_test
 
 ; below are files from CAM5 and CAM6
 fc5_295=addfile(file_omega_5_295,"r")
@@ -136,28 +96,30 @@ ntim=fc5_295->time
 ;printVarSummary(ntim)
 
 ; look at 5 day chunks (for files that have hourly output)
-n5d=ntim/120
+;hourChunk=24
+hourChunk=120
+n5d=ntim/hourChunk
 
 print("begin to reshape arrays")
 
-numperiods=timelength/120
+numperiods=timelength/hourChunk
 print("numperiods ="+numperiods)
 
 ;c5a_reshape=new((/120,219,192,288/),float)
 ;c5a_reshape=reshape(play5a,(/120,219,192,288/))
-c5a_reshape=new((/120,numperiods,192,288/),float)
-c5b_reshape=new((/120,numperiods,192,288/),float)
-c5c_reshape=new((/120,numperiods,192,288/),float)
-c6c_reshape=new((/120,numperiods,192,288/),float)
-c6b_reshape=new((/120,numperiods,192,288/),float)
-c6a_reshape=new((/120,numperiods,192,288/),float)
+c5a_reshape=new((/hourChunk,numperiods,192,288/),float)
+c5b_reshape=new((/hourChunk,numperiods,192,288/),float)
+c5c_reshape=new((/hourChunk,numperiods,192,288/),float)
+c6c_reshape=new((/hourChunk,numperiods,192,288/),float)
+c6b_reshape=new((/hourChunk,numperiods,192,288/),float)
+c6a_reshape=new((/hourChunk,numperiods,192,288/),float)
 
-c5a_reshape=reshape(c5a,(/120,numperiods,192,288/))
-c5b_reshape=reshape(c5b,(/120,numperiods,192,288/))
-c5c_reshape=reshape(c5c,(/120,numperiods,192,288/))
-c6a_reshape=reshape(c6a,(/120,numperiods,192,288/))
-c6b_reshape=reshape(c6b,(/120,numperiods,192,288/))
-c6c_reshape=reshape(c6c,(/120,numperiods,192,288/))
+c5a_reshape=reshape(c5a,(/hourChunk,numperiods,192,288/))
+c5b_reshape=reshape(c5b,(/hourChunk,numperiods,192,288/))
+c5c_reshape=reshape(c5c,(/hourChunk,numperiods,192,288/))
+c6a_reshape=reshape(c6a,(/hourChunk,numperiods,192,288/))
+c6b_reshape=reshape(c6b,(/hourChunk,numperiods,192,288/))
+c6c_reshape=reshape(c6c,(/hourChunk,numperiods,192,288/))
 
 ;printVarSummary(c5a_reshape)
 
@@ -283,14 +245,16 @@ print("begin to make plots")
 
 plot = new(1,"graphic")
 
-pdf_c5a=pdfx(c5a_5dmn,50,False)
-pdf_c5b=pdfx(c5b_5dmn,50,False)
-pdf_c5c=pdfx(c5c_5dmn,50,False)
+nbins=250
+
+pdf_c5a=pdfx(c5a_5dmn,nbins,False)
+pdf_c5b=pdfx(c5b_5dmn,nbins,False)
+pdf_c5c=pdfx(c5c_5dmn,nbins,False)
 pdf_c5a_morebins=pdfx(c5a_5dmn,50,False)
 ;
-pdf_c6a=pdfx(c6a_5dmn,50,False)
-pdf_c6b=pdfx(c6b_5dmn,50,False)
-pdf_c6c=pdfx(c6c_5dmn,50,False)
+pdf_c6a=pdfx(c6a_5dmn,nbins,False)
+pdf_c6b=pdfx(c6b_5dmn,nbins,False)
+pdf_c6c=pdfx(c6c_5dmn,nbins,False)
 pdf_c6a_morebins=pdfx(c6a_5dmn,50,False)
 ;
 ; colors = (/"black","darkgoldenrod","darkolivegreen3","steelblue","mediumorchid3","darkslategray4","cyan3","red"/)
@@ -308,9 +272,9 @@ res@tiYAxisString      = "PDF (%)"
 res@tiXAxisString      = "circulation regime (hPa/d)"
 
 res@trXMinF = -150.0
-res@trXMaxF = 75.0
+res@trXMaxF = 150.0
 res@trYMinF = 0.0
-res@trYMaxF = 20.0
+res@trYMaxF = 45.0
 
 res@tmXTOn              = False
 res@tmXTBorderOn        = False
@@ -361,7 +325,7 @@ plot(0)=plot0_a
 ;plot(1)=plot1_a
 ;
 resP    = True
-resP@gsnPanelMainString  = "Circulation Regime over last year"
+;resP@gsnPanelMainString  = "Circulation Regime over last year"
 gsn_panel(wks,plot,(/1,1/),resP)
 
 end
