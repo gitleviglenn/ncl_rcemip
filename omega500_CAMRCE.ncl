@@ -18,6 +18,8 @@
 ; Cronin and Wing used 5 day chunks.  Kevins tendency seems to be to not chunk at all
 ; but compute the pdf on as many samples as possible.  
 ;
+; check how much of a difference the native grid makes to the PDFs.
+;
 ; levi silvers                                                           may 2020
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -26,11 +28,28 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 begin
 
+; define indices for time steps read and used...
+;timelength=24479 ; all but the first 75 days
+;timelength=2880 ; 4 months
+;timelength=240 ; 100 days
+timelength=8760 ; 1 year 
+;timelength=17520 ; 2 years
+endtime=26200;
+;endtime=25000 ; ICON GCM has fewer timesteps that CAM or ECHAM
+;echam has 26280
+;endtime=26279 ; this is the end time for CAM5 and CAM6
+startime=endtime-timelength+1
+
+; number of bins used for the PDFs
+nbins=250
+
+; define paths to data
 path_laptop="/Users/silvers/data/CAM/"
 path_C5_lt="CAM5_GCM_RCE/"
 path_C6_lt="CAM6_GCM_RCE/"
 
 path_cheyenne="/glade/scratch/levi/RCEMIP/"
+path_2_native="/glade/scratch/kareed/RCEMIP/"
 path_C5="CAM5_GCM/";RCE_large305/2D/"
 path_C6="CAM6_GCM/";RCE_large305/2D/"
 
@@ -48,18 +67,7 @@ file_omega_6_300=path_cheyenne+path_C6+"RCE_large300/2D/CAM6_GCM_RCE_large300_2D
 file_omega_5_305=path_cheyenne+path_C5+"RCE_large305/2D/CAM5_GCM_RCE_large305_2D_wap500.nc"
 file_omega_6_305=path_cheyenne+path_C6+"RCE_large305/2D/CAM6_GCM_RCE_large305_2D_wap500.nc"
 
-print("begin adding files...")
-;timelength=24479 ; all but the first 75 days
-;timelength=2880 ; 4 months
-timelength=240 ; 100 days
-;timelength=8760 ; 1 year 
-;timelength=17520 ; 2 years
-endtime=26200;
-;endtime=25000 ; ICON GCM has fewer timesteps that CAM or ECHAM
-;echam has 26280
-;endtime=26279 ; this is the end time for CAM5 and CAM6
-startime=endtime-timelength+1
-
+  print("begin adding files...")
 
 ; below are files from CAM5 and CAM6
 fc5_295=addfile(file_omega_5_295,"r")
@@ -76,8 +84,8 @@ fc5_305=addfile(file_omega_5_305,"r")
 c5c=fc5_305->wap500(startime:endtime,:,:)
 fc6_305=addfile(file_omega_6_305,"r")
 c6c=fc6_305->wap500(startime:endtime,:,:)
-
-print("convert to hPa/d")
+  
+  print("convert to hPa/d")
 
 c5a=864*c5a  ; convert to hPa/d
 c6a=864*c6a  ; convert to hPa/d
@@ -86,24 +94,86 @@ c6b=864*c6b  ; convert to hPa/d
 c5c=864*c5c  ; convert to hPa/d
 c6c=864*c6c  ; convert to hPa/d
 
-print("incoming file: "+file_omega_5_295)
-print("incoming file: "+file_omega_6_295)
-
-;printVarSummary(c5a)
 ;printVarSummary(c6a)
 
 ntim=fc5_295->time
-;printVarSummary(ntim)
 
 ; look at 5 day chunks (for files that have hourly output)
 ;hourChunk=24
 hourChunk=120
 n5d=ntim/hourChunk
-
-print("begin to reshape arrays")
-
 numperiods=timelength/hourChunk
 print("numperiods ="+numperiods)
+
+
+;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+; import the data that is on the native grid...
+
+ncols = 48602
+sstarray=(/"295","300","305"/)
+blab = new((/3,nbins/),float)
+blab_a = new((/1,nbins/),float)
+test_reshape=new((/hourChunk,numperiods,ncols/),float)
+in = 0
+; CAM5 on the native grid
+do while(in .le. 2) 
+  sststring=sstarray(in)
+  files_native  = systemfunc ("ls "+path_2_native+"/CAM5_GCM_RCE_large"+sststring+"/run/*cam.h1.*nc")
+  natives       = addfiles (files_native,"r")
+  ListSetType(natives,"cat")
+    print("natives names are: "+files_native)
+  
+  date = natives[:]->date
+  
+  c5a_test=natives[:]->OMEGA500(startime:endtime,:)
+  c5a_test=864*c5a_test  ; convert to hPa/d
+  
+  test_reshape=reshape(c5a_test,(/hourChunk,numperiods,ncols/))
+  
+  ; compute time average...
+  test_dmn=dim_avg_n(test_reshape,0)
+  pdf_test=pdfx(test_dmn,nbins,False)
+
+;  plot0_ng_b    =  gsn_csm_xy (wks,blab_a@bin_center, pdf_c5a, res)
+  if (in .lt. 1) then
+    pdf_a=pdf_test
+  else if (in .lt. 2) then
+    pdf_b=pdf_test 
+  else
+    pdf_c=pdf_test
+  end if
+  end if
+
+; CAM6 on the native grid
+  files_native  = systemfunc ("ls "+path_2_native+"/CAM6_GCM_RCE_large"+sststring+"/run/*cam.h1.*nc")
+  natives       = addfiles (files_native,"r")
+  ListSetType(natives,"cat")
+    print("natives names are: "+files_native)
+  
+  c_test=natives[:]->OMEGA500(startime:endtime,:)
+  c_test=864*c_test  ; convert to hPa/d
+  
+  test_reshape=reshape(c_test,(/hourChunk,numperiods,ncols/))
+  
+  ; compute time average...
+  test_dmn=dim_avg_n(test_reshape,0)
+  pdf_test=pdfx(test_dmn,nbins,False)
+
+;  plot0_ng_b    =  gsn_csm_xy (wks,blab_a@bin_center, pdf_c5a, res)
+  if (in .lt. 1) then
+    pdf_d=pdf_test
+  else if (in .lt. 2) then
+    pdf_e=pdf_test 
+  else
+    pdf_f=pdf_test
+  end if
+  end if
+  in=in+1  
+end do
+
+;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+print("begin to reshape arrays")
 
 ;c5a_reshape=new((/120,219,192,288/),float)
 ;c5a_reshape=reshape(play5a,(/120,219,192,288/))
@@ -123,30 +193,20 @@ c6c_reshape=reshape(c6c,(/hourChunk,numperiods,192,288/))
 
 ;printVarSummary(c5a_reshape)
 
-;c6a_reshape=new((/120,6,192,288/),float)
-;c6a_reshape=reshape(c6a,(/120,6,192,288/))
-;printVarSummary(c6a_reshape)
-
-;plah!0     ="time"
-;play&time  =c5a&time
-;plah!1     ="time1"
-;plah!2     ="lat"
-;play&lat   =c5a&lat
-;plah!3     ="lon"
-;play&lon   =c5a&lon
-;
-
 print("average arrays")
 
-;???LINES MISSING
+; compute time average.  The resulting arrays are then binned
+; into pdfs for plotting....
 c5a_5dmn=dim_avg_n(c5a_reshape,0)
 c5b_5dmn=dim_avg_n(c5b_reshape,0)
 c5c_5dmn=dim_avg_n(c5c_reshape,0)
 c6a_5dmn=dim_avg_n(c6a_reshape,0)
 c6b_5dmn=dim_avg_n(c6b_reshape,0)
 c6c_5dmn=dim_avg_n(c6c_reshape,0)
-;printVarSummary(c5a_5dmn)
 
+printVarSummary(c5a_5dmn)
+
+;-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-===-=-=-=-=--=-=-=-=-=
 print("compute omega up and omega dn")
 
 ; where(cond_expr,true,false)
@@ -245,17 +305,20 @@ print("begin to make plots")
 
 plot = new(1,"graphic")
 
-nbins=250
-
 pdf_c5a=pdfx(c5a_5dmn,nbins,False)
 pdf_c5b=pdfx(c5b_5dmn,nbins,False)
 pdf_c5c=pdfx(c5c_5dmn,nbins,False)
 pdf_c5a_morebins=pdfx(c5a_5dmn,50,False)
 ;
+;pdf_test=pdfx(test_dmn,nbins,False)
+;
 pdf_c6a=pdfx(c6a_5dmn,nbins,False)
 pdf_c6b=pdfx(c6b_5dmn,nbins,False)
 pdf_c6c=pdfx(c6c_5dmn,nbins,False)
 pdf_c6a_morebins=pdfx(c6a_5dmn,50,False)
+
+printVarSummary(pdf_c6a)
+printVarSummary(pdf_test)
 ;
 ; colors = (/"black","darkgoldenrod","darkolivegreen3","steelblue","mediumorchid3","darkslategray4","cyan3","red"/)
   ;colors = (/"black","orangered","orangered3","orangered4"/)
@@ -271,10 +334,10 @@ res@xyLineThicknessF   = 5.
 res@tiYAxisString      = "PDF (%)"
 res@tiXAxisString      = "circulation regime (hPa/d)"
 
-res@trXMinF = -150.0
-res@trXMaxF = 150.0
+res@trXMinF = -100.0
+res@trXMaxF = 75.0
 res@trYMinF = 0.0
-res@trYMaxF = 45.0
+res@trYMaxF = 8.0
 
 res@tmXTOn              = False
 res@tmXTBorderOn        = False
@@ -309,20 +372,34 @@ res@xyLineColors = colors(1)
 ;res@xyDashPattern =  16
 res@xyLineThicknessF = 6.
 plot0_f    =  gsn_csm_xy (wks,pdf_c6c@bin_center, pdf_c6c, res)
+;test native grid...
+res@xyLineColors ="black" 
+res@xyLineThicknessF = 1.
+plot0_ng_a    =  gsn_csm_xy (wks,pdf_a@bin_center, pdf_a, res)
+res@xyLineThicknessF = 2.
+plot0_ng_b    =  gsn_csm_xy (wks,pdf_b@bin_center, pdf_b, res)
+res@xyLineThicknessF = 3.
+plot0_ng_c    =  gsn_csm_xy (wks,pdf_c@bin_center, pdf_c, res)
+res@xyLineColors ="red" 
+res@xyLineThicknessF = 1.
+plot0_ng_d    =  gsn_csm_xy (wks,pdf_d@bin_center, pdf_d, res)
+res@xyLineThicknessF = 2.
+plot0_ng_e    =  gsn_csm_xy (wks,pdf_e@bin_center, pdf_e, res)
+res@xyLineThicknessF = 3.
+plot0_ng_f    =  gsn_csm_xy (wks,pdf_f@bin_center, pdf_f, res)
 overlay(plot0_a,plot0_b)
 overlay(plot0_a,plot0_c)
 overlay(plot0_a,plot0_d)
 overlay(plot0_a,plot0_e)
 overlay(plot0_a,plot0_f)
+overlay(plot0_a,plot0_ng_a)
+overlay(plot0_a,plot0_ng_b)
+overlay(plot0_a,plot0_ng_c)
+overlay(plot0_a,plot0_ng_d)
+overlay(plot0_a,plot0_ng_e)
+overlay(plot0_a,plot0_ng_f)
 plot(0)=plot0_a
 
-;res@gsnCenterString    = "50 bins"
-;res@xyLineColors = "black"
-;plot1_a    =  gsn_csm_xy (wks,pdf_c5a_morebins@bin_center, pdf_c5a_morebins, res)
-;res@xyLineColors = "green"
-;plot1_b    =  gsn_csm_xy (wks,pdf_c6a_morebins@bin_center, pdf_c6a_morebins, res)
-;overlay(plot1_a,plot1_b)
-;plot(1)=plot1_a
 ;
 resP    = True
 ;resP@gsnPanelMainString  = "Circulation Regime over last year"
