@@ -276,9 +276,9 @@ blue=omega_down(1,:,:,:)
 
 do i=0,5
   omega_dn= omega_down(i,:,:,:)
-  av_a=dim_avg_n(omega_dn,0)
-  av_b=dim_avg_n(av_a,0)
-  omega_d(i)=dim_avg_n(av_b,0)
+  av_a=dim_avg_n(omega_dn,0)    ; average in time
+  av_b=dim_avg_n(av_a,0)        ; average over latitude
+  omega_d(i)=dim_avg_n(av_b,0)  ; average over longitude
   omega_uu= omega_up(i,:,:,:)
   av_a=dim_avg_n(omega_uu,0)
   av_b=dim_avg_n(av_a,0)
