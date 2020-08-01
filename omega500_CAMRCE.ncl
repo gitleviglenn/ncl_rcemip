@@ -41,7 +41,8 @@ endtime=26200;
 startime=endtime-timelength+1
 
 ; number of bins used for the PDFs
-nbins=250
+;nbins=250
+nbins=50
 
 ; define paths to data
 path_laptop="/Users/silvers/data/CAM/"
@@ -134,7 +135,7 @@ do while(in .le. 2)
   test_dmn=dim_avg_n(test_reshape,0)
   pdf_test=pdfx(test_dmn,nbins,False)
 
-;  plot0_ng_b    =  gsn_csm_xy (wks,blab_a@bin_center, pdf_c5a, res)
+; Calculate PDFs for CAM5 
   if (in .lt. 1) then
     pdf_a=pdf_test
   else if (in .lt. 2) then
@@ -159,7 +160,7 @@ do while(in .le. 2)
   test_dmn=dim_avg_n(test_reshape,0)
   pdf_test=pdfx(test_dmn,nbins,False)
 
-;  plot0_ng_b    =  gsn_csm_xy (wks,blab_a@bin_center, pdf_c5a, res)
+; Calculate PDFs for CAM6 
   if (in .lt. 1) then
     pdf_d=pdf_test
   else if (in .lt. 2) then
@@ -337,7 +338,7 @@ res@tiXAxisString      = "circulation regime (hPa/d)"
 res@trXMinF = -100.0
 res@trXMaxF = 75.0
 res@trYMinF = 0.0
-res@trYMaxF = 8.0
+res@trYMaxF = 18.0
 
 res@tmXTOn              = False
 res@tmXTBorderOn        = False
@@ -373,36 +374,67 @@ res@xyLineColors = colors(1)
 res@xyLineThicknessF = 6.
 plot0_f    =  gsn_csm_xy (wks,pdf_c6c@bin_center, pdf_c6c, res)
 ;test native grid...
-res@xyLineColors ="black" 
-res@xyLineThicknessF = 1.
+; pdf_a, pdf_b, and pdf_c are CAM5
+res@xyLineColors = colors(0)
+res@xyLineThicknessF = 2.
 plot0_ng_a    =  gsn_csm_xy (wks,pdf_a@bin_center, pdf_a, res)
-res@xyLineThicknessF = 2.
+res@xyLineThicknessF = 4.
 plot0_ng_b    =  gsn_csm_xy (wks,pdf_b@bin_center, pdf_b, res)
-res@xyLineThicknessF = 3.
+res@xyLineThicknessF = 6.
 plot0_ng_c    =  gsn_csm_xy (wks,pdf_c@bin_center, pdf_c, res)
-res@xyLineColors ="red" 
-res@xyLineThicknessF = 1.
-plot0_ng_d    =  gsn_csm_xy (wks,pdf_d@bin_center, pdf_d, res)
+; pdf_d, pdf_e, and pdf_f are CAM6
+res@xyLineColors = colors(1)
 res@xyLineThicknessF = 2.
+plot0_ng_d    =  gsn_csm_xy (wks,pdf_d@bin_center, pdf_d, res)
+res@xyLineThicknessF = 4.
 plot0_ng_e    =  gsn_csm_xy (wks,pdf_e@bin_center, pdf_e, res)
-res@xyLineThicknessF = 3.
+res@xyLineThicknessF = 6.
 plot0_ng_f    =  gsn_csm_xy (wks,pdf_f@bin_center, pdf_f, res)
-overlay(plot0_a,plot0_b)
-overlay(plot0_a,plot0_c)
-overlay(plot0_a,plot0_d)
-overlay(plot0_a,plot0_e)
-overlay(plot0_a,plot0_f)
-overlay(plot0_a,plot0_ng_a)
-overlay(plot0_a,plot0_ng_b)
-overlay(plot0_a,plot0_ng_c)
-overlay(plot0_a,plot0_ng_d)
-overlay(plot0_a,plot0_ng_e)
-overlay(plot0_a,plot0_ng_f)
-plot(0)=plot0_a
+
+plotnative=1
+; plot all lines
+if (plotnative .lt. 1) then
+  overlay(plot0_ng_a,plot0_a)
+  overlay(plot0_ng_a,plot0_b)
+  overlay(plot0_ng_a,plot0_c)
+  overlay(plot0_ng_a,plot0_d)
+  overlay(plot0_ng_a,plot0_e)
+  overlay(plot0_ng_a,plot0_f)
+  overlay(plot0_ng_a,plot0_ng_b)
+  overlay(plot0_ng_a,plot0_ng_c)
+  overlay(plot0_ng_a,plot0_ng_d)
+  overlay(plot0_ng_a,plot0_ng_e)
+  overlay(plot0_ng_a,plot0_ng_f)
+else ; plot only data from the native grid
+  overlay(plot0_ng_a,plot0_ng_b)
+  overlay(plot0_ng_a,plot0_ng_c)
+  overlay(plot0_ng_a,plot0_ng_d)
+  overlay(plot0_ng_a,plot0_ng_e)
+  overlay(plot0_ng_a,plot0_ng_f)
+end if
+;
+plot(0)=plot0_ng_a
 
 ;
-resP    = True
+;resP    = True
 ;resP@gsnPanelMainString  = "Circulation Regime over last year"
-gsn_panel(wks,plot,(/1,1/),resP)
+;gsn_panel(wks,plot,(/1,1/),resP)
+
+lgres                    = True
+lgres@lgLineColors       = (/"chocolate2","aquamarine3"/)    ; colors for legend lines
+lgres@vpWidthF           = 0.12                   ; width of legend (NDC)
+lgres@vpHeightF          = 0.08                   ; height of legend (NDC)
+lgres@lgPerimOn          = False                 ; turn off perimeter
+lgres@lgDashIndexes      = (/0,0/)              ; dash indexes
+lgres@lgLineLabelStrings = (/"",""/)             ; no labels in lines
+lgres@lgLineThicknessF   = 8.0
+lgres@lgLabelFontHeightF = 0.1
+lgres@lgLabelFont        = 22
+lgres@lgBoxMinorExtentF  = .2
+gsn_legend_ndc(wks,2,(/" CAM5"," CAM6"/),.25,.7,lgres)
+
+draw(plot(0))
+ 
+frame(wks)
 
 end
