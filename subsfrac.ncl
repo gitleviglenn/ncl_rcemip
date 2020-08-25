@@ -270,13 +270,15 @@ do t=0,5
   ydn(t)=dataarr(t)-sigma(t) 
 end do
 
-  hpos=(/3.0,3.00,3.02,3.02,3.00,3.02/)
+  hpos    = (/2.99,3.01,3.03,2.98,3.0,3.02/)
+  lthick  = (/1.5,2.5,3.5,1.5,2.5,3.5/)
   centers = new(6,graphic)
   varianc = new(6,graphic)
 
   color4markers=(/"chocolate2","chocolate2","chocolate2","aquamarine3","aquamarine3","aquamarine3"/)
 
   do t=0,5
+    polyres@gsLineThicknessF  = lthick(t)
     polyres@gsMarkerColor = color4markers(t) 
     polyres@gsLineColor = color4markers(t)
     print("1 "+hpos(t))
