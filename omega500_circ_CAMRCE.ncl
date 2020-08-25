@@ -12,17 +12,16 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 begin
 
 ; define indices for time steps read and used...
-timelength=240 ; 100 days
-;timelength=8760 ; 1 year 
+;timelength=240 ; 100 days
+;timelength=4440 ; about 6 months
+timelength=8760 ; 1 year 
 ;timelength=17520 ; 2 years
 endtime=26200;
 startime=endtime-timelength+1
 
-; number of bins used for the PDFs
-;nbins=50
-
 ; period over which averaging occurs before pdf is computed
-hourChunk=120
+;hourChunk=120 ; 5 day chunks
+hourChunk=24
 numperiods=timelength/hourChunk
 print("numperiods ="+numperiods)
 
@@ -47,7 +46,6 @@ omega_down =new((/6,numperiods,ncols/),float)
 omega_u    =new((/6/),float)
 omega_d    =new((/6/),float)
 
-test_reshape=new((/hourChunk,numperiods,ncols/),float)
 in = 0
 ; CAM5 on the native grid
 do while(in .le. 2) 
@@ -97,16 +95,6 @@ do while(in .le. 2)
   
   data_c6_generic_reshape=new((/hourChunk,numperiods,ncols/),float)
   data_c6_generic_reshape=reshape(data_c6,(/hourChunk,numperiods,ncols/))
-
-;data_c6_generic_reshape=new((/hourChunk,numperiods,ncols/),float)
-;data_c6_generic_reshape=reshape(data_c6a,(/hourChunk,numperiods,ncols/))
-;; average over chunks....  should I average over chunks before calculating up down?
-;c6a_chunk_mn=dim_avg_n(data_c6_reshape,0)
-;printVarSummary(c6a_chunk_mn)
-  
-  ; compute time average...
-;  test_dmn=dim_avg_n(test_reshape,0)
-;  pdf_test=pdfx(test_dmn,nbins,False)
 
 ; Calculate PDFs for CAM6 
   if (in .lt. 1) then
