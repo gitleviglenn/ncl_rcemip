@@ -1,7 +1,8 @@
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 ; CAMRCE_table1.ncl
 ;
-; calculate the global mean values for table 1 in RCEMIP papers 
+; calculate the global mean values of cl(CF), pr(P), prw(PW), and rlut(OLR), 
+; for table 1 in RCEMIP papers 
 ; for CAM5 and CAM6 at 295, 300, and 305K
 ;
 ; levi silvers                                                            july 2020
