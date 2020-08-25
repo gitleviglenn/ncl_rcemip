@@ -326,14 +326,14 @@ printVarSummary(pdf_test)
   colors = (/"chocolate2","aquamarine3"/)
 
 ;
-wks = gsn_open_wks("eps","testplot")
+wks = gsn_open_wks("eps","testplot_pdf")
 
 res                    = True
 res@gsnDraw            = False
 res@gsnFrame           = False
 res@xyLineThicknessF   = 5.
-res@tiYAxisString      = "PDF (%)"
-res@tiXAxisString      = "circulation regime (hPa/d)"
+res@tiYAxisString      = "Probability (%)"
+res@tiXAxisString      = "Circulation Regime (hPa/day)"
 
 res@trXMinF = -100.0
 res@trXMaxF = 75.0
