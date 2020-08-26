@@ -1,9 +1,9 @@
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 ; omega500_circ_CAMRCE.ncl
 ;
-; script to compute the intensity of the overturning circulation
+; script computes the intensity of the overturning circulation using CAM's native grid
 ;
-; levi silvers                                                           may 2020
+; levi silvers                                                           aug 2020
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
@@ -20,8 +20,8 @@ endtime=26200;
 startime=endtime-timelength+1
 
 ; period over which averaging occurs before pdf is computed
-;hourChunk=120 ; 5 day chunks
-hourChunk=24
+hourChunk=120 ; 5 day chunks
+;hourChunk=24
 numperiods=timelength/hourChunk
 print("numperiods ="+numperiods)
 
@@ -152,10 +152,6 @@ print("!@#$%@%^@#%$")
 
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-print("begin to calculate circulation strength")
-
-;-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-===-=-=-=-=--=-=-=-=-=
-print("compute omega up and omega dn")
 
 
 
