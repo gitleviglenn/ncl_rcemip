@@ -5,6 +5,9 @@
 ; for table 1 in RCEMIP papers 
 ; for CAM5 and CAM6 at 295, 300, and 305K
 ;
+; I think the raw data is here: 
+; /glade/scratch/kareed/RCEMIP//CAM6_GCM_RCE_large305/run/CAM6_GCM_RCE_large305.cam.h1.2002-08-08-00000.nc
+;
 ; levi silvers                                                            july 2020
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -32,9 +35,17 @@ file_pr_avg_5_295=path_cheyenne+path_C5+"RCE_large295/0D/CAM5_GCM_RCE_large295_0
 file_pr_avg_5_300=path_cheyenne+path_C5+"RCE_large300/0D/CAM5_GCM_RCE_large300_0D_pr_avg.nc"
 file_pr_avg_5_305=path_cheyenne+path_C5+"RCE_large305/0D/CAM5_GCM_RCE_large305_0D_pr_avg.nc"
 
+file_pr_conv_5_295=path_cheyenne+path_C5+"RCE_large295/2D/CAM5_GCM_RCE_large295_2D_pr_conv.nc"
+file_pr_conv_5_300=path_cheyenne+path_C5+"RCE_large300/2D/CAM5_GCM_RCE_large300_2D_pr_conv.nc"
+file_pr_conv_5_305=path_cheyenne+path_C5+"RCE_large305/2D/CAM5_GCM_RCE_large305_2D_pr_conv.nc"
+
 file_pr_avg_6_295=path_cheyenne+path_C6+"RCE_large295/0D/CAM6_GCM_RCE_large295_0D_pr_avg.nc"
 file_pr_avg_6_300=path_cheyenne+path_C6+"RCE_large300/0D/CAM6_GCM_RCE_large300_0D_pr_avg.nc"
 file_pr_avg_6_305=path_cheyenne+path_C6+"RCE_large305/0D/CAM6_GCM_RCE_large305_0D_pr_avg.nc"
+
+file_pr_conv_6_295=path_cheyenne+path_C6+"RCE_large295/2D/CAM6_GCM_RCE_large295_2D_pr_conv.nc"
+file_pr_conv_6_300=path_cheyenne+path_C6+"RCE_large300/2D/CAM6_GCM_RCE_large300_2D_pr_conv.nc"
+file_pr_conv_6_305=path_cheyenne+path_C6+"RCE_large305/2D/CAM6_GCM_RCE_large305_2D_pr_conv.nc"
 
 ; prw
 file_prw_avg_5_295=path_cheyenne+path_C5+"RCE_large295/0D/CAM5_GCM_RCE_large295_0D_prw_avg.nc"
@@ -62,6 +73,7 @@ endtime=26200 ; ICON GCM has fewer timesteps that CAM or ECHAM
 startime=endtime-timelength+1
 
 ; below are files from CAM5 and CAM6
+print("one incoming file is: "+file_rlut_avg_5_295)
 ; cl
 fc5_295_cl=addfile(file_cl_5_295,"r")
 c5a=fc5_295_cl->cl(startime:endtime,:,:)
@@ -91,6 +103,21 @@ fc6_300=addfile(file_pr_avg_6_300,"r")
 c6b_pr=fc6_300->pr_avg(startime:endtime)
 fc6_305=addfile(file_pr_avg_6_305,"r")
 c6c_pr=fc6_305->pr_avg(startime:endtime)
+
+; pr_conv
+fc5_prc_295 =addfile(file_pr_conv_5_295,"r")
+c5a_prc     =fc5_prc_295->pr_conv(startime:endtime,:,:)
+fc5_prc_300 =addfile(file_pr_conv_5_300,"r")
+c5b_prc     =fc5_prc_300->pr_conv(startime:endtime,:,:)
+fc5_prc_305 =addfile(file_pr_conv_5_305,"r")
+c5c_prc     =fc5_prc_305->pr_conv(startime:endtime,:,:)
+
+fc6_prc_295 =addfile(file_pr_conv_6_295,"r")
+c6a_prc     =fc6_prc_295->pr_conv(startime:endtime,:,:)
+fc6_prc_300 =addfile(file_pr_conv_6_300,"r")
+c6b_prc     =fc6_prc_300->pr_conv(startime:endtime,:,:)
+fc6_prc_305 =addfile(file_pr_conv_6_305,"r")
+c6c_prc     =fc6_prc_305->pr_conv(startime:endtime,:,:)
 
 ; prw 
 fc5_295=addfile(file_prw_avg_5_295,"r")
@@ -133,14 +160,26 @@ field_c5_a_weighted=new(timelength,float)
 field_c5_b_weighted=new(timelength,float)
 field_c5_c_weighted=new(timelength,float)
 
+field_c5_prc_a_weighted=new(timelength,float)
+field_c5_prc_b_weighted=new(timelength,float)
+field_c5_prc_c_weighted=new(timelength,float)
+
 field_c6_a_weighted=new(timelength,float)
 field_c6_b_weighted=new(timelength,float)
 field_c6_c_weighted=new(timelength,float)
+
+field_c6_prc_a_weighted=new(timelength,float)
+field_c6_prc_b_weighted=new(timelength,float)
+field_c6_prc_c_weighted=new(timelength,float)
+
 
 do ti=0,timelength-1
   field_c5_a_weighted(ti)     = wgt_areaave(c5a(ti,:,:),clat,1.0,0)
   field_c5_b_weighted(ti)     = wgt_areaave(c5b(ti,:,:),clat,1.0,0)
   field_c5_c_weighted(ti)     = wgt_areaave(c5c(ti,:,:),clat,1.0,0)
+  field_c5_prc_a_weighted(ti)   = wgt_areaave(c5a_prc(ti,:,:),clat,1.0,0)
+  field_c5_prc_b_weighted(ti)   = wgt_areaave(c5b_prc(ti,:,:),clat,1.0,0)
+  field_c5_prc_c_weighted(ti)   = wgt_areaave(c5c_prc(ti,:,:),clat,1.0,0)
   ;field_c5_pr_a_weighted(ti)     = wgt_areaave(c5a_pr(ti,:,:),clat,1.0,0)
   ;field_c5_pr_b_weighted(ti)     = wgt_areaave(c5b_pr(ti,:,:),clat,1.0,0)
   ;field_c5_pr_c_weighted(ti)     = wgt_areaave(c5c_pr(ti,:,:),clat,1.0,0)
@@ -155,6 +194,9 @@ do ti=0,timelength-1
   field_c6_a_weighted(ti)     = wgt_areaave(c6a(ti,:,:),clat,1.0,0)
   field_c6_b_weighted(ti)     = wgt_areaave(c6b(ti,:,:),clat,1.0,0)
   field_c6_c_weighted(ti)     = wgt_areaave(c6c(ti,:,:),clat,1.0,0)
+  field_c6_prc_a_weighted(ti)   = wgt_areaave(c6a_prc(ti,:,:),clat,1.0,0)
+  field_c6_prc_b_weighted(ti)   = wgt_areaave(c6b_prc(ti,:,:),clat,1.0,0)
+  field_c6_prc_c_weighted(ti)   = wgt_areaave(c6c_prc(ti,:,:),clat,1.0,0)
   ;field_c6_pr_a_weighted(ti)     = wgt_areaave(c6a_pr(ti,:,:),clat,1.0,0)
   ;field_c6_pr_b_weighted(ti)     = wgt_areaave(c6b_pr(ti,:,:),clat,1.0,0)
   ;field_c6_pr_c_weighted(ti)     = wgt_areaave(c6c_pr(ti,:,:),clat,1.0,0)
@@ -170,12 +212,14 @@ end do
 
   print("mean values of cl for CAM5 295K: "+dim_avg_n(field_c5_a_weighted,0)+" and 300K: "+dim_avg_n(field_c5_b_weighted,0)+" and 305K: "+dim_avg_n(field_c5_c_weighted,0))
   print("mean values of pr for CAM5 295K: "+pscale*dim_avg_n(c5a_pr,0)+" and 300K: "+pscale*dim_avg_n(c5b_pr,0)+" and 305K: "+pscale*dim_avg_n(c5c_pr,0))
+  print("mean values of conv pr for CAM5 295K: "+pscale*dim_avg_n(field_c5_prc_a_weighted,0)+" and 300K: "+pscale*dim_avg_n(field_c5_prc_b_weighted,0)+" and 305K: "+pscale*dim_avg_n(field_c5_prc_c_weighted,0))
   print("mean values of prw for CAM5 295K: "+dim_avg_n(c5a_prw,0)+" and 300K: "+dim_avg_n(c5b_prw,0)+" and 305K: "+dim_avg_n(c5c_prw,0))
   print("mean values of rlut for CAM5 295K: "+dim_avg_n(c5a_rlut,0)+" and 300K: "+dim_avg_n(c5b_rlut,0)+" and 305K: "+dim_avg_n(c5c_rlut,0))
 ;
   ;print("mean values of cl for CAM6 295K: "+dim_avg_n(field_c6_a_weighted,0))
   print("mean values of cl for CAM6 295K: "+dim_avg_n(field_c6_a_weighted,0)+" and 300K: "+dim_avg_n(field_c6_b_weighted,0)+" and 305K: "+dim_avg_n(field_c6_c_weighted,0))
   print("mean values of pr for CAM6 295K: "+pscale*dim_avg_n(c6a_pr,0)+" and 300K: "+pscale*dim_avg_n(c6b_pr,0)+" and 305K: "+pscale*dim_avg_n(c6c_pr,0))
+  print("mean values of conv pr for CAM6 295K: "+pscale*dim_avg_n(field_c6_prc_a_weighted,0)+" and 300K: "+pscale*dim_avg_n(field_c6_prc_b_weighted,0)+" and 305K: "+pscale*dim_avg_n(field_c6_prc_c_weighted,0))
   print("mean values of prw for CAM6 295K: "+dim_avg_n(c6a_prw,0)+" and 300K: "+dim_avg_n(c6b_prw,0)+" and 305K: "+dim_avg_n(c6c_prw,0))
   print("mean values of rlut for CAM6 295K: "+dim_avg_n(c6a_rlut,0)+" and 300K: "+dim_avg_n(c6b_rlut,0)+" and 305K: "+dim_avg_n(c6c_rlut,0))
 ;

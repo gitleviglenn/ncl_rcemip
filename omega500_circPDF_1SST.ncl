@@ -1,6 +1,9 @@
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 ; omega500_circPDF_1SST.ncl
 ;
+; produces a single panel figure showing a pdf of omega500 plotted from an 
+; average over the last 100, 365, and 730 days of simulation
+;
 ; levi silvers                                                           sep 2020
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -62,7 +65,7 @@ stime = new((/3/),"integer")
 numperiods = new((/3/),"integer")
 ;omega_test = new((/2400,ncols/),"float")
 
-in = 1
+in = 0
 ;do while(in .le. 2) ; loop over SST
   sststring=sstarray(in)
   files_native  = systemfunc ("ls "+path_2_native+"/CAM5_GCM_RCE_large"+sststring+"/run/*cam.h1.*nc")
@@ -123,6 +126,14 @@ do while(index .le. 2) ; loop over start time
   delete(omega_test)
   delete(test_reshape)
 end do
+
+print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+print("sum of pdf is: "+sum(pdf_a@bin_center))
+print("sum of pdf is: "+sum(pdf_test))
+print("sum of pdf_a is: "+sum(pdf_a))
+print("sum of pdf_b is: "+sum(pdf_b))
+print("sum of pdf_c is: "+sum(pdf_c))
+print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
 
 ;;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
