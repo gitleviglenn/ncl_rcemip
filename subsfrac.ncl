@@ -45,6 +45,8 @@ W0b=F0_c6->wap500
 W1b=F1_c6->wap500
 W2b=F2_c6->wap500
 
+  printVarSummary(W2b)
+
 W0 = (/864.*W0/)
 W1 = (/864.*W1/)
 W2 = (/864.*W2/)
@@ -82,8 +84,15 @@ W2b_day=where((W2b_day .ge. 0),1.,0.)
   clat = cos(lat*rad)
   ;field1_test = where(field1.gt.-900., field1,default_fillvalue("float"))
 
-endtime=1090
+;endtime=1090
+;endtime=365
 
+w0_day_dims=dimsizes(W0_day)
+endtime=w0_day_dims(0)
+startana=endtime-365
+analength=endtime-startana
+
+  print("length of analysis is, in days is: "+analength)
   print("dimsizes of W0_day are: "+dimsizes(W0_day))
 
 field0_weighted=new(endtime,float)
@@ -93,7 +102,6 @@ field2_weighted=new(endtime,float)
 field0b_weighted=new(endtime,float)
 field1b_weighted=new(endtime,float)
 field2b_weighted=new(endtime,float)
-
 
 do ti=0,endtime-1
   field0_weighted(ti)     = wgt_areaave(W0_day(ti,:,:),clat,1.0,0)
@@ -105,43 +113,44 @@ do ti=0,endtime-1
   field2b_weighted(ti)     = wgt_areaave(W2b_day(ti,:,:),clat,1.0,0)
 end do
 
+  printVarSummary(field0_weighted)
+
 ; calculate the standard deviation and variance of the last two years
 
-stats_sub=new((/6,725/), double)
+;stats_sub=new((/6,725/), double)
+stats_sub=new((/6,analength/), double)
 
   print("dimensions of field0_weighted are: "+dimsizes(field0_weighted))
+  print("dimensions of stats_sub are: "+dimsizes(stats_sub))
 
-field0_weighted2yr=field0_weighted(365::)
+;startana=730
+field0_weighted2yr=field0_weighted(startana::)
 print("dimensions of field0_weighted2yr are: "+dimsizes(field0_weighted2yr))
-stats_sub(0,:)=field0_weighted(365::) 
+stats_sub(0,:)=field0_weighted(startana::) 
 ;f02y=dim_stat4_n(field0_weighted2yr,0)
-field1_weighted2yr=field1_weighted(365::)
-stats_sub(1,:)=field1_weighted(365::) 
+field1_weighted2yr=field1_weighted(startana::)
+stats_sub(1,:)=field1_weighted(startana::) 
 ;f12y=dim_stat4_n(field1_weighted2yr,0)
-field2_weighted2yr=field2_weighted(365::)
-stats_sub(2,:)=field2_weighted(365::) 
+field2_weighted2yr=field2_weighted(startana::)
+stats_sub(2,:)=field2_weighted(startana::) 
 ;f22y=dim_stat4_n(field2_weighted2yr,0)
-;field3_weighted2yr=field3_weighted(365::)
-stats_sub(3,:)=field0b_weighted(365::) 
+;field3_weighted2yr=field3_weighted(startana::)
+stats_sub(3,:)=field0b_weighted(startana::) 
 ;f32y=dim_stat4_n(field3_weighted2yr,0)
-;field4_weighted2yr=field4_weighted(365::)
-stats_sub(4,:)=field1b_weighted(365::) 
+;field4_weighted2yr=field4_weighted(startana::)
+stats_sub(4,:)=field1b_weighted(startana::) 
 ;f42y=dim_stat4_n(field4_weighted2yr,0)
-;field5_weighted2yr=field5_weighted(365::)
-stats_sub(5,:)=field2b_weighted(365::) 
+;field5_weighted2yr=field5_weighted(startana::)
+stats_sub(5,:)=field2b_weighted(startana::) 
 ;f52y=dim_stat4_n(field5_weighted2yr,0)
 
-stats_2yr=dim_stat4_n(stats_sub,1)
+stats=dim_stat4_n(stats_sub,1)
   print("~!@#$%^&*()*&^%$#@!~")
-  print("statistics of sub time series for last two years: "+stats_2yr)
+  print("statistics of sub time series over averaging period: "+stats)
   print("~!@#$%^&*()*&^%$#@!~")
 
-
-;var_w500 = omega_500->wap500(:,:,:)
-;
-;var_6a_mn=dim_avg_n(var_6a,0)
-;
-;  print("~!@#$%^&*()*&^%$#@!~")
+sf_overlastyear=dim_avg_n(stats_sub,1)
+  print("subsidence fraction over last: "+analength+" is "+sf_overlastyear)
 
 ;;*****************************************************************************
 plotname = "w500_subfrac_comp_cam5"
@@ -175,9 +184,9 @@ res@trXMinF = 2
 res@trXMaxF = 3.1
 ;
 ;
-;print(W2_up)
-;
-fotime=fspan(1,1090,1090)
+;fotime=fspan(1,1090,1090)
+fotime=fspan(1,endtime,endtime)
+
 f0_runmn=runave_n_Wrap(field0_weighted,10,0,0)
 f1_runmn=runave_n_Wrap(field1_weighted,10,0,0)
 f2_runmn=runave_n_Wrap(field2_weighted,10,0,0)
@@ -185,17 +194,13 @@ f0b_runmn=runave_n_Wrap(field0b_weighted,10,0,0)
 f1b_runmn=runave_n_Wrap(field1b_weighted,10,0,0)
 f2b_runmn=runave_n_Wrap(field2b_weighted,10,0,0)
 ;
-print("mean of cam5 295K sub frac: "+dim_avg_n(field0_weighted,0))
-print("mean of cam5 300K sub frac: "+dim_avg_n(field1_weighted,0))
-print("mean of cam5 305K sub frac: "+dim_avg_n(field2_weighted,0))
-print("mean of cam6 295K sub frac: "+dim_avg_n(field0b_weighted,0))
-print("mean of cam6 300K sub frac: "+dim_avg_n(field1b_weighted,0))
-print("mean of cam6 305K sub frac: "+dim_avg_n(field2b_weighted,0))
+print("full mean of cam5 295K sub frac: "+dim_avg_n(field0_weighted,0))
+print("full mean of cam5 300K sub frac: "+dim_avg_n(field1_weighted,0))
+print("full mean of cam5 305K sub frac: "+dim_avg_n(field2_weighted,0))
+print("full mean of cam6 295K sub frac: "+dim_avg_n(field0b_weighted,0))
+print("full mean of cam6 300K sub frac: "+dim_avg_n(field1b_weighted,0))
+print("full mean of cam6 305K sub frac: "+dim_avg_n(field2b_weighted,0))
 ;
-;print("dimsizes of time are: "+dimsizes(time))
-;print("dimsizes of field0_weighted are: "+dimsizes(field0_weighted))
-;print("dimsizes of field1_weighted are: "+dimsizes(field1_weighted))
-;print("dimsizes of field2_weighted are: "+dimsizes(field2_weighted))
 ; below can be used if to plot all at once, with no overlay, but then I am unsure how 
 ; to change line thickness...
 ;plot = gsn_csm_xy(wks, (/fotime/365,fotime/365,fotime/365,fotime/365,fotime/365,fotime/365/),\
@@ -258,9 +263,9 @@ polyres@gsLineThicknessF  = 3.5
   dataarr=(/0.71,0.74,0.74,0.70,0.77,0.76/)
 ;           c5 ,c5 ,c5 ,c6 ,c6 ,c6
 ;          295,300,305 ,295,300,305
-; var:    0.0001,.0002,.0003 ,0.0001,.0002,.0002
-; std:    0.1, 0.17,0.22,0.1,.14,.17
-sigma=(/0.01,0.014,0.017,0.01,0.014,0.014/) ; standard deviation
+; var:    0.0001,.0003,.0003,0.0001,.0002,.0002
+; std:    0.01, 0.017,0.017,0.01,.014,.014
+sigma=(/0.01,0.017,0.017,0.01,0.014,0.014/) ; standard deviation
 yup=(/-999.,-999.,-999.,-999.,-999.,-999./)
 ydn=(/-999.,-999.,-999.,-999.,-999.,-999./)
 

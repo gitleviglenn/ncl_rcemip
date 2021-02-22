@@ -35,6 +35,11 @@ file_pr_avg_5_295=path_cheyenne+path_C5+"RCE_large295/0D/CAM5_GCM_RCE_large295_0
 file_pr_avg_5_300=path_cheyenne+path_C5+"RCE_large300/0D/CAM5_GCM_RCE_large300_0D_pr_avg.nc"
 file_pr_avg_5_305=path_cheyenne+path_C5+"RCE_large305/0D/CAM5_GCM_RCE_large305_0D_pr_avg.nc"
 
+; pr from 2D data
+file_pr_2D_5_295=path_cheyenne+path_C5+"RCE_large295/2D/CAM5_GCM_RCE_large295_2D_pr.nc"
+file_pr_2D_5_300=path_cheyenne+path_C5+"RCE_large300/2D/CAM5_GCM_RCE_large300_2D_pr.nc"
+file_pr_2D_5_305=path_cheyenne+path_C5+"RCE_large305/2D/CAM5_GCM_RCE_large305_2D_pr.nc"
+
 file_pr_conv_5_295=path_cheyenne+path_C5+"RCE_large295/2D/CAM5_GCM_RCE_large295_2D_pr_conv.nc"
 file_pr_conv_5_300=path_cheyenne+path_C5+"RCE_large300/2D/CAM5_GCM_RCE_large300_2D_pr_conv.nc"
 file_pr_conv_5_305=path_cheyenne+path_C5+"RCE_large305/2D/CAM5_GCM_RCE_large305_2D_pr_conv.nc"
@@ -42,6 +47,11 @@ file_pr_conv_5_305=path_cheyenne+path_C5+"RCE_large305/2D/CAM5_GCM_RCE_large305_
 file_pr_avg_6_295=path_cheyenne+path_C6+"RCE_large295/0D/CAM6_GCM_RCE_large295_0D_pr_avg.nc"
 file_pr_avg_6_300=path_cheyenne+path_C6+"RCE_large300/0D/CAM6_GCM_RCE_large300_0D_pr_avg.nc"
 file_pr_avg_6_305=path_cheyenne+path_C6+"RCE_large305/0D/CAM6_GCM_RCE_large305_0D_pr_avg.nc"
+
+; pr from 2D data
+file_pr_2D_6_295=path_cheyenne+path_C6+"RCE_large295/2D/CAM6_GCM_RCE_large295_2D_pr.nc"
+file_pr_2D_6_300=path_cheyenne+path_C6+"RCE_large300/2D/CAM6_GCM_RCE_large300_2D_pr.nc"
+file_pr_2D_6_305=path_cheyenne+path_C6+"RCE_large305/2D/CAM6_GCM_RCE_large305_2D_pr.nc"
 
 file_pr_conv_6_295=path_cheyenne+path_C6+"RCE_large295/2D/CAM6_GCM_RCE_large295_2D_pr_conv.nc"
 file_pr_conv_6_300=path_cheyenne+path_C6+"RCE_large300/2D/CAM6_GCM_RCE_large300_2D_pr_conv.nc"
@@ -119,6 +129,21 @@ c6b_prc     =fc6_prc_300->pr_conv(startime:endtime,:,:)
 fc6_prc_305 =addfile(file_pr_conv_6_305,"r")
 c6c_prc     =fc6_prc_305->pr_conv(startime:endtime,:,:)
 
+; pr_2D
+fc5_pr2D_295 =addfile(file_pr_2D_5_295,"r")
+c5a_pr2D     =fc5_pr2D_295->pr(startime:endtime,:,:)
+fc5_pr2D_300 =addfile(file_pr_2D_5_300,"r")
+c5b_pr2D     =fc5_pr2D_300->pr(startime:endtime,:,:)
+fc5_pr2D_305 =addfile(file_pr_2D_5_305,"r")
+c5c_pr2D     =fc5_pr2D_305->pr(startime:endtime,:,:)
+
+fc6_pr2D_295 =addfile(file_pr_2D_6_295,"r")
+c6a_pr2D     =fc6_pr2D_295->pr(startime:endtime,:,:)
+fc6_pr2D_300 =addfile(file_pr_2D_6_300,"r")
+c6b_pr2D     =fc6_pr2D_300->pr(startime:endtime,:,:)
+fc6_pr2D_305 =addfile(file_pr_2D_6_305,"r")
+c6c_pr2D     =fc6_pr2D_305->pr(startime:endtime,:,:)
+
 ; prw 
 fc5_295=addfile(file_prw_avg_5_295,"r")
 c5a_prw=fc5_295->prw_avg(startime:endtime)
@@ -164,6 +189,10 @@ field_c5_prc_a_weighted=new(timelength,float)
 field_c5_prc_b_weighted=new(timelength,float)
 field_c5_prc_c_weighted=new(timelength,float)
 
+field_c5_pr2D_a_weighted=new(timelength,float)
+field_c5_pr2D_b_weighted=new(timelength,float)
+field_c5_pr2D_c_weighted=new(timelength,float)
+
 field_c6_a_weighted=new(timelength,float)
 field_c6_b_weighted=new(timelength,float)
 field_c6_c_weighted=new(timelength,float)
@@ -172,14 +201,24 @@ field_c6_prc_a_weighted=new(timelength,float)
 field_c6_prc_b_weighted=new(timelength,float)
 field_c6_prc_c_weighted=new(timelength,float)
 
+field_c6_pr2D_a_weighted=new(timelength,float)
+field_c6_pr2D_b_weighted=new(timelength,float)
+field_c6_pr2D_c_weighted=new(timelength,float)
+
 
 do ti=0,timelength-1
-  field_c5_a_weighted(ti)     = wgt_areaave(c5a(ti,:,:),clat,1.0,0)
-  field_c5_b_weighted(ti)     = wgt_areaave(c5b(ti,:,:),clat,1.0,0)
-  field_c5_c_weighted(ti)     = wgt_areaave(c5c(ti,:,:),clat,1.0,0)
-  field_c5_prc_a_weighted(ti)   = wgt_areaave(c5a_prc(ti,:,:),clat,1.0,0)
-  field_c5_prc_b_weighted(ti)   = wgt_areaave(c5b_prc(ti,:,:),clat,1.0,0)
-  field_c5_prc_c_weighted(ti)   = wgt_areaave(c5c_prc(ti,:,:),clat,1.0,0)
+  field_c5_a_weighted(ti)        = wgt_areaave(c5a(ti,:,:),clat,1.0,0)
+  field_c5_b_weighted(ti)        = wgt_areaave(c5b(ti,:,:),clat,1.0,0)
+  field_c5_c_weighted(ti)        = wgt_areaave(c5c(ti,:,:),clat,1.0,0)
+; convective precip
+  field_c5_prc_a_weighted(ti)    = wgt_areaave(c5a_prc(ti,:,:),clat,1.0,0)
+  field_c5_prc_b_weighted(ti)    = wgt_areaave(c5b_prc(ti,:,:),clat,1.0,0)
+  field_c5_prc_c_weighted(ti)    = wgt_areaave(c5c_prc(ti,:,:),clat,1.0,0)
+; 2D precip
+  field_c5_pr2D_a_weighted(ti)   = wgt_areaave(c5a_pr2D(ti,:,:),clat,1.0,0)
+  field_c5_pr2D_b_weighted(ti)   = wgt_areaave(c5b_pr2D(ti,:,:),clat,1.0,0)
+  field_c5_pr2D_c_weighted(ti)   = wgt_areaave(c5c_pr2D(ti,:,:),clat,1.0,0)
+
   ;field_c5_pr_a_weighted(ti)     = wgt_areaave(c5a_pr(ti,:,:),clat,1.0,0)
   ;field_c5_pr_b_weighted(ti)     = wgt_areaave(c5b_pr(ti,:,:),clat,1.0,0)
   ;field_c5_pr_c_weighted(ti)     = wgt_areaave(c5c_pr(ti,:,:),clat,1.0,0)
@@ -191,12 +230,18 @@ do ti=0,timelength-1
   ;field_c5_rlut_c_weighted(ti)     = wgt_areaave(c5c_rlut(ti,:,:),clat,1.0,0)
 ;
 ;
-  field_c6_a_weighted(ti)     = wgt_areaave(c6a(ti,:,:),clat,1.0,0)
-  field_c6_b_weighted(ti)     = wgt_areaave(c6b(ti,:,:),clat,1.0,0)
-  field_c6_c_weighted(ti)     = wgt_areaave(c6c(ti,:,:),clat,1.0,0)
-  field_c6_prc_a_weighted(ti)   = wgt_areaave(c6a_prc(ti,:,:),clat,1.0,0)
-  field_c6_prc_b_weighted(ti)   = wgt_areaave(c6b_prc(ti,:,:),clat,1.0,0)
-  field_c6_prc_c_weighted(ti)   = wgt_areaave(c6c_prc(ti,:,:),clat,1.0,0)
+  field_c6_a_weighted(ti)        = wgt_areaave(c6a(ti,:,:),clat,1.0,0)
+  field_c6_b_weighted(ti)        = wgt_areaave(c6b(ti,:,:),clat,1.0,0)
+  field_c6_c_weighted(ti)        = wgt_areaave(c6c(ti,:,:),clat,1.0,0)
+; convective precip
+  field_c6_prc_a_weighted(ti)    = wgt_areaave(c6a_prc(ti,:,:),clat,1.0,0)
+  field_c6_prc_b_weighted(ti)    = wgt_areaave(c6b_prc(ti,:,:),clat,1.0,0)
+  field_c6_prc_c_weighted(ti)    = wgt_areaave(c6c_prc(ti,:,:),clat,1.0,0)
+; 2D precip
+  field_c6_pr2D_a_weighted(ti)   = wgt_areaave(c6a_pr2D(ti,:,:),clat,1.0,0)
+  field_c6_pr2D_b_weighted(ti)   = wgt_areaave(c6b_pr2D(ti,:,:),clat,1.0,0)
+  field_c6_pr2D_c_weighted(ti)   = wgt_areaave(c6c_pr2D(ti,:,:),clat,1.0,0)
+
   ;field_c6_pr_a_weighted(ti)     = wgt_areaave(c6a_pr(ti,:,:),clat,1.0,0)
   ;field_c6_pr_b_weighted(ti)     = wgt_areaave(c6b_pr(ti,:,:),clat,1.0,0)
   ;field_c6_pr_c_weighted(ti)     = wgt_areaave(c6c_pr(ti,:,:),clat,1.0,0)
@@ -210,17 +255,28 @@ end do
 
 ;  print("dimensions of weighted mean field for 295K: "+dimsizes(field_c5_a_weighted))
 
+  print("<<<<<<<<<<<<<<<<<<<<<<<< OUTPUT for TABLE 1 >>>>>>>>>>>>>>>>>>>>>>>>>")
+  print("######### CAM5")
   print("mean values of cl for CAM5 295K: "+dim_avg_n(field_c5_a_weighted,0)+" and 300K: "+dim_avg_n(field_c5_b_weighted,0)+" and 305K: "+dim_avg_n(field_c5_c_weighted,0))
+  print("---------")
   print("mean values of pr for CAM5 295K: "+pscale*dim_avg_n(c5a_pr,0)+" and 300K: "+pscale*dim_avg_n(c5b_pr,0)+" and 305K: "+pscale*dim_avg_n(c5c_pr,0))
+  print("mean values of 2D pr for CAM5 295K: "+pscale*dim_avg_n(field_c5_pr2D_a_weighted,0)+" and 300K: "+pscale*dim_avg_n(field_c5_pr2D_b_weighted,0)+" and 305K: "+pscale*dim_avg_n(field_c5_pr2D_c_weighted,0))
   print("mean values of conv pr for CAM5 295K: "+pscale*dim_avg_n(field_c5_prc_a_weighted,0)+" and 300K: "+pscale*dim_avg_n(field_c5_prc_b_weighted,0)+" and 305K: "+pscale*dim_avg_n(field_c5_prc_c_weighted,0))
+  print("---------")
   print("mean values of prw for CAM5 295K: "+dim_avg_n(c5a_prw,0)+" and 300K: "+dim_avg_n(c5b_prw,0)+" and 305K: "+dim_avg_n(c5c_prw,0))
+  print("---------")
   print("mean values of rlut for CAM5 295K: "+dim_avg_n(c5a_rlut,0)+" and 300K: "+dim_avg_n(c5b_rlut,0)+" and 305K: "+dim_avg_n(c5c_rlut,0))
 ;
-  ;print("mean values of cl for CAM6 295K: "+dim_avg_n(field_c6_a_weighted,0))
+  print("######### CAM6")
+;
   print("mean values of cl for CAM6 295K: "+dim_avg_n(field_c6_a_weighted,0)+" and 300K: "+dim_avg_n(field_c6_b_weighted,0)+" and 305K: "+dim_avg_n(field_c6_c_weighted,0))
+  print("---------")
   print("mean values of pr for CAM6 295K: "+pscale*dim_avg_n(c6a_pr,0)+" and 300K: "+pscale*dim_avg_n(c6b_pr,0)+" and 305K: "+pscale*dim_avg_n(c6c_pr,0))
+  print("mean values of 2D pr for CAM6 295K: "+pscale*dim_avg_n(field_c6_pr2D_a_weighted,0)+" and 300K: "+pscale*dim_avg_n(field_c6_pr2D_b_weighted,0)+" and 305K: "+pscale*dim_avg_n(field_c6_pr2D_c_weighted,0))
   print("mean values of conv pr for CAM6 295K: "+pscale*dim_avg_n(field_c6_prc_a_weighted,0)+" and 300K: "+pscale*dim_avg_n(field_c6_prc_b_weighted,0)+" and 305K: "+pscale*dim_avg_n(field_c6_prc_c_weighted,0))
+  print("---------")
   print("mean values of prw for CAM6 295K: "+dim_avg_n(c6a_prw,0)+" and 300K: "+dim_avg_n(c6b_prw,0)+" and 305K: "+dim_avg_n(c6c_prw,0))
+  print("---------")
   print("mean values of rlut for CAM6 295K: "+dim_avg_n(c6a_rlut,0)+" and 300K: "+dim_avg_n(c6b_rlut,0)+" and 305K: "+dim_avg_n(c6c_rlut,0))
 ;
 end

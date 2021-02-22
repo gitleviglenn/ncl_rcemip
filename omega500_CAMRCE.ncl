@@ -6,10 +6,8 @@
 ;
 ; analyze characteristics of the circulation using omega at 500 hPa
 ;
-; includes old code which calculates the intensity of circulation on the lat/lon grid 
-;
-; data is from CAM5 GCM RCE experiments and is at hourly frequency over 3 years
-; dimensions of omega:	[time | 26281] x [lat | 192] x [lon | 288]
+; for data on the native grid how uniform is the grid spacing? Does averaging without
+; spatial weights such as cosine weights in a lat/lon grid introduce errors? 
 ;
 ; timing: 
 ; 1 year:         8760 time steps
@@ -23,6 +21,13 @@
 ; check how much of a difference the native grid makes to the PDFs.
 ;
 ; levi silvers                                                           aug 2020
+; 
+; originally I created the pdf figures using data that had been averaged over some chunk 
+; of days, usually 5 days.  this does not seem to be the best way to look at the pdf's.
+; 
+; I am also looking at pdfs created without any chunking.
+; 
+; levi silvers                                                          feb 2021
 ;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
@@ -44,7 +49,8 @@ startime=endtime-timelength+1
 
 ; number of bins used for the PDFs
 ;nbins=250
-nbins=50
+;nbins=50
+nbins=25
 
 ; define paths to data
 path_laptop="/Users/silvers/data/CAM/"
@@ -111,24 +117,30 @@ blab = new((/3,nbins/),float)
 blab_a = new((/1,nbins/),float)
 test_reshape=new((/hourChunk,numperiods,ncols/),float)
 in = 0
-; CAM5 on the native grid
 do while(in .le. 2) 
+; CAM5 on the native grid
   sststring=sstarray(in)
   files_native  = systemfunc ("ls "+path_2_native+"/CAM5_GCM_RCE_large"+sststring+"/run/*cam.h1.*nc")
   natives       = addfiles (files_native,"r")
   ListSetType(natives,"cat")
-    print("natives names are: "+files_native)
+    ;print("natives names are: "+files_native)
   
   date = natives[:]->date
   
-  c5a_test=natives[:]->OMEGA500(startime:endtime,:)
-  c5a_test=864*c5a_test  ; convert to hPa/d
-  
-  test_reshape=reshape(c5a_test,(/hourChunk,numperiods,ncols/))
+  omega_gen=natives[:]->OMEGA500(startime:endtime,:)
+  omega_gen=864*omega_gen  ; convert to hPa/d
+    print("CAM5 dimsizes of omega_gen are: "+dimsizes(omega_gen)+" hopefully 2 dimensions")
+  omega_mn  = dim_avg_n(omega_gen,1) 
+  omega_tmn = dim_avg_n(omega_mn,0) 
+ 
+  test_reshape=reshape(omega_gen,(/hourChunk,numperiods,ncols/))
   
   ; compute time average...
+    print("CAM5 dimsizes of test_reshape are: "+dimsizes(test_reshape)+ "hopefully 3 dimensions")
   test_dmn=dim_avg_n(test_reshape,0)
-  pdf_test=pdfx(test_dmn,nbins,False)
+  ; original method: pdf_test=pdfx(test_dmn,nbins,False)
+  ;pdf_test=pdfx(test_dmn,nbins,False)
+  pdf_test=pdfx(omega_gen,nbins,False)
 
 ; Calculate PDFs for CAM5 
   if (in .lt. 1) then
@@ -139,21 +151,27 @@ do while(in .le. 2)
     pdf_c=pdf_test
   end if
   end if
+    print("maximum of pdf_a bin_center is: "+max(pdf_a@bin_center))
 
 ; CAM6 on the native grid
   files_native  = systemfunc ("ls "+path_2_native+"/CAM6_GCM_RCE_large"+sststring+"/run/*cam.h1.*nc")
   natives       = addfiles (files_native,"r")
   ListSetType(natives,"cat")
-    print("natives names are: "+files_native)
+    ;print("natives names are: "+files_native)
   
-  c_test=natives[:]->OMEGA500(startime:endtime,:)
-  c_test=864*c_test  ; convert to hPa/d
+  omega_gen2=natives[:]->OMEGA500(startime:endtime,:)
+  omega_gen2=864*omega_gen2  ; convert to hPa/d
   
-  test_reshape=reshape(c_test,(/hourChunk,numperiods,ncols/))
+    print("CAM6 dimsizes of omega_gen2 are: "+dimsizes(omega_gen2)+" hopefully 2 dimensions")
+  omega2_mn  = dim_avg_n(omega_gen2,1)
+  omega2_tmn = dim_avg_n(omega2_mn,0) 
+  test_reshape=reshape(omega_gen2,(/hourChunk,numperiods,ncols/))
   
   ; compute time average...
+    print("CAM6 dimsizes of test_reshape are: "+dimsizes(test_reshape)+ "hopefully 3 dimensions")
   test_dmn=dim_avg_n(test_reshape,0)
-  pdf_test=pdfx(test_dmn,nbins,False)
+  ; original method: pdf_test=pdfx(test_dmn,nbins,False)
+  pdf_test=pdfx(omega_gen2,nbins,False)
 
 ; Calculate PDFs for CAM6 
   if (in .lt. 1) then
@@ -164,8 +182,15 @@ do while(in .le. 2)
     pdf_f=pdf_test
   end if
   end if
-  in=in+1  
+    print("maximum of pdf_a bin_center is: "+max(pdf_a@bin_center))
+  in=in+1   ; advance the index which sets the SST
+    print("mean values of omega in CAM5 are: "+omega_tmn)
+    print("mean values of omega in CAM6 are: "+omega2_tmn)
 end do
+  print("natives names are: "+files_native)
+
+
+;  print(" and the whole shebang is: "+omega_mn)
 
 ;;-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 ;
@@ -327,10 +352,14 @@ res@xyLineThicknessF   = 5.
 res@tiYAxisString      = "Probability (%)"
 res@tiXAxisString      = "Circulation Regime (hPa/day)"
 
-res@trXMinF = -100.0
-res@trXMaxF = 75.0
+;res@trXMinF = -100.0
+;res@trXMaxF = 75.0
+res@trXMinF = -200.0
+res@trXMaxF = 200.0
 res@trYMinF = 0.0
-res@trYMaxF = 18.0
+res@trYMaxF = 100.0
+;res@trYMinF = 0.0
+;res@trYMaxF = 18.0
 
 res@tmXTOn              = False
 res@tmXTBorderOn        = False
@@ -368,6 +397,7 @@ res@xyLineThicknessF = 6.
 ;native grid...
 res@xyLineColors = colors(0)
 res@xyLineThicknessF = 2.
+  print("maximum of pdf_a bin_center is: "+max(pdf_a@bin_center))
 plot0_ng_a    =  gsn_csm_xy (wks,pdf_a@bin_center, pdf_a, res)
 res@xyLineThicknessF = 4.
 plot0_ng_b    =  gsn_csm_xy (wks,pdf_b@bin_center, pdf_b, res)
